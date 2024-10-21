@@ -1,0 +1,5 @@
+@EndUserText.label: 'Service for upload file'
+define service ZUI_EXCELUPLOAD_O4 {
+  expose zc_file_table as File;
+  expose zc_db_data    as excelData;
+}

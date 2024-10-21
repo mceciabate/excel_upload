@@ -1,0 +1,72 @@
+managed implementation in class zbp_i_file_table unique;
+strict ( 2 );
+with draft;
+
+define behavior for zi_file_table alias File
+persistent table zafiletable331
+lock master
+total etag end_user
+draft table zafiletable331_d
+authorization master ( instance )
+etag master end_user
+//etag master <field_name>
+{
+  create;
+  update;
+  delete;
+  // Logic to convert uploaded excel into internal table and save to the child entity is written here
+  action ( features : instance ) uploadExcelData result [1] $self;
+
+  // Crea un registro en modo draft
+  determination fields on modify { field Filename; }
+
+  draft action Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+  draft determine action Prepare;
+
+  field ( readonly ) end_user;
+  association _dbdata { create; with draft; }
+
+  mapping for zafiletable331 corresponding
+    {
+      end_user              = end_user;
+      status                = status;
+      Attachment            = attachment;
+      MimeType              = mimetype;
+      Filename              = filename;
+      Local_Created_By      = local_created_by;
+      Local_Created_By      = local_created_at;
+      Local_Last_Changed_By = local_last_changed_by;
+      Local_Created_At      = local_last_changed_at;
+      Last_Changed_At       = last_changed_at;
+    }
+}
+
+define behavior for zi_db_data alias ExcelData
+persistent table zadb331
+lock dependent by _file
+draft table zadb331_d
+authorization dependent by _file
+etag master Begdate
+//with unmanaged save
+{
+  update;
+  delete;
+  field ( readonly ) end_user;
+  field ( readonly : update ) Ebeln, Ebelp, Entrysheet;
+  association _file { with draft; }
+  action createSES result [1] $self;
+  mapping for zadb331 corresponding
+    {
+      end_user   = end_user;
+      Entrysheet = entrysheet;
+      Ebeln      = ebeln;
+      Ebelp      = ebelp;
+      Ext_Number = ext_number;
+      Begdate    = begdate;
+      Enddate    = enddate;
+      Fin_Entry  = fin_entry;
+    }
+}
